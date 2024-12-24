@@ -51,12 +51,12 @@ function showHistory(){
 
       try{
 
-        const el = e.currentTarget //dataset.filename
+        const el = e.currentTarget
 
-        document.getElementById('debug').textContent = `Go back to: ${el.dataset.filename}`
+        loadMD(el.dataset.filename)
 
+        //document.getElementById('debug').textContent = `Go back to: ${el.dataset.filename}`
         /* (async()=>{
-
           await message(`You clicked on: `, { title: 'History', kind: 'info' });  // ${el.dataset.filename}
         })() */
       }
@@ -75,6 +75,19 @@ async function greet() {
   greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
 }
 
+async function loadMD(fname) {
+
+  let mdcontent = await readTextFile(fname)
+      
+  let html = marked.parse(mdcontent);
+
+  document.getElementById(targetEl).innerHTML = html
+
+  history.push(fname)
+
+  storeFileName(fname)
+}
+
 async function openMD() {
 
   try{
@@ -84,19 +97,14 @@ async function openMD() {
       directory: false,
     });
 
-    let mdcontent = await readTextFile(filename)
-      
-    let html = marked.parse(mdcontent);
+    loadMD(filename)
 
-    document.getElementById(targetEl).innerHTML = html
-
+    //let mdcontent = await readTextFile(filename)
+    //let html = marked.parse(mdcontent);
+    //document.getElementById(targetEl).innerHTML = html
     //document.getElementById('debug').textContent = await path.appDataDir()
 
     document.getElementById('moreinfo').textContent = filename
-
-    history.push(filename)
-
-    storeFileName(filename)
 
   }
   catch(err){
