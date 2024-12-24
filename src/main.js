@@ -83,7 +83,10 @@ async function loadMD(fname) {
 
   document.getElementById(targetEl).innerHTML = html
 
-  history.push(fname)
+  if(history.indexOf(fname) == -1){
+
+    history.push(fname)
+  }
 
   storeFileName(fname)
 }
