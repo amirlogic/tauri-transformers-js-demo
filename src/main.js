@@ -9,28 +9,65 @@ const targetEl = 'markdown'
 
 let history = []
 
+let store
+
 let greetInputEl;
 let greetMsgEl;
 
+async function errorMessage(err){
+
+  await message(err, { title: 'Oops...', kind: 'error' });
+}
+
 async function storeFileName(fname){
 
-  const store = await load('store.json', { autoSave: false });
+  //const store = await load('store.json', { autoSave: false });
 
-  await store.set('lastfile', { value: fname });
+  await store.set('lastfile', fname);
 
   await store.save();
 }
 
 async function getStoreData(){
 
-  const store = await load('store.json', { autoSave: false });
+  //const store = await load('store.json', { autoSave: false });
 
-  return await store.get('lastfile').value
+  return await store.get('lastfile')
 }
 
 function showHistory(){
 
+  document.getElementById(targetEl).innerHTML = history.map((row,indx)=>{
+                                                                      return `<p><a id="hlnk-${indx}" href="#" class="history-item" data-filename="${row}">${row}</a></p>`
+                                                                    }).join('')
 
+  let hitems = document.querySelectorAll('.history-item')
+  
+  hitems.forEach((item)=>{
+
+    item.addEventListener('click',(e)=>{
+
+      e.preventDefault();
+
+      try{
+
+        const el = e.currentTarget //dataset.filename
+
+        document.getElementById('debug').textContent = `Go back to: ${el.dataset.filename}`
+
+        /* (async()=>{
+
+          await message(`You clicked on: `, { title: 'History', kind: 'info' });  // ${el.dataset.filename}
+        })() */
+      }
+      catch(err){
+
+        errorMessage(err)
+      }
+      
+    })
+
+  })
 }
 
 async function greet() {
@@ -57,7 +94,9 @@ async function openMD() {
 
     document.getElementById('moreinfo').textContent = filename
 
-    await storeFileName(filename)
+    history.push(filename)
+
+    storeFileName(filename)
 
   }
   catch(err){
@@ -93,11 +132,11 @@ async function testDialog(){
 
   if(typeof(stored) == "string"){
 
-    await message(`Stored filename: ${getStoreData()}`, { title: 'Tauri', kind: 'info' });
+    await message(`Stored filename (str): ${getStoreData()}`, { title: 'Tauri', kind: 'info' });
   }
   else if(typeof(stored) == "object"){
 
-    await message(`Stored filename: ${JSON.stringify(stored)}`, { title: 'Tauri', kind: 'info' });
+    await message(`Stored filename (obj): ${JSON.stringify(stored)}`, { title: 'Tauri', kind: 'info' });
   }
   else{
 
@@ -111,6 +150,12 @@ window.addEventListener("DOMContentLoaded", () => {
   greetInputEl = document.querySelector("#greet-input");
   greetMsgEl = document.querySelector("#greet-msg");
 
+  (async()=>{
+
+    store = await load('store.json', { autoSave: false });
+
+  })()
+  
   document.getElementById('testdialog').addEventListener("click", (e) => {
 
     //testDialog()
@@ -119,17 +164,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById('nav-about').addEventListener("click", async (e) => {
 
-    await message(`Created by Amir Hachaichi\nUses marked`, { title: 'About', kind: 'info' });
+    await message(`Created by Amir Hachaichi\nUses marked\ngithub.com/amirlogic/tauri-apps-vanilla-js`, { title: 'About', kind: 'info' });
 
   })
 
-  document.getElementById('nav-history').addEventListener("click", async (e) => {
+  document.getElementById('nav-history').addEventListener("click", (e) => {
 
+    showHistory()
 
+  })
 
-    document.getElementById(targetEl).innerHTML = ""
+  document.getElementById('nav-test').addEventListener("click", (e) => {
 
-    //await message(`Created by Amir Hachaichi\nUses marked`, { title: 'About', kind: 'info' });
+    testDialog()
+
+    //await message(``, { title: 'About', kind: 'info' });
 
   })
 
@@ -142,6 +191,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById('mdfile').addEventListener("change", (e) => {
 
     document.getElementById('filedata').textContent = document.getElementById('mdfile').value 
+
   });
 
   document.querySelector("#greet-form").addEventListener("submit", (e) => {
