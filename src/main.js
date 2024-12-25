@@ -1,7 +1,8 @@
 const { invoke } = window.__TAURI__.core;
 const { exists, BaseDirectory, readTextFile } = window.__TAURI__.fs;
 const { open, message } = window.__TAURI__.dialog;
-const { load } = window.__TAURI__.store;
+const { Command } = window.__TAURI__.shell;
+//const { load } = window.__TAURI__.store;
 
 let openedFile
 
@@ -19,21 +20,21 @@ async function errorMessage(err){
   await message(err, { title: 'Oops...', kind: 'error' });
 }
 
-async function storeFileName(fname){
+/* async function storeFileName(fname){
 
   //const store = await load('store.json', { autoSave: false });
 
   await store.set('lastfile', fname);
 
   await store.save();
-}
+} */
 
-async function getStoreData(){
+/* async function getStoreData(){
 
   //const store = await load('store.json', { autoSave: false });
 
   return await store.get('lastfile')
-}
+} */
 
 function showHistory(){
 
@@ -70,10 +71,10 @@ function showHistory(){
   })
 }
 
-async function greet() {
+/* async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
-}
+} */
 
 async function loadMD(fname) {
 
@@ -88,7 +89,11 @@ async function loadMD(fname) {
     history.push(fname)
   }
 
-  storeFileName(fname)
+  openedFile = fname
+
+  document.getElementById('opened-file').innerText = fname
+
+  //storeFileName(fname)
 }
 
 async function openMD() {
@@ -102,35 +107,15 @@ async function openMD() {
 
     loadMD(filename)
 
-    document.getElementById('moreinfo').textContent = filename
+    //document.getElementById('moreinfo').textContent = filename
 
   }
   catch(err){
 
-    document.getElementById('debug').textContent = `${err}`
+    errorMessage(err)
+    //document.getElementById('debug').textContent = `${err}`
   }
 }
-
-/* async function viewMD() {
-
-  try{
-    let filename = document.getElementById('mdfile').value
-
-    let mdcontent = await invoke("read_markdown_file", { filename: filename })
-
-    const converter = new showdown.Converter(),
-      //text      = '# hello, markdown!',
-      html      = converter.makeHtml(mdcontent);
-
-    document.getElementById(targetEl).innerHTML = html
-    document.getElementById('debug').textContent = "test" //filename
-  }
-  catch(err){
-
-    document.getElementById('debug').textContent = `${err} ${document.getElementById('mdfile').value}`
-
-  }
-} */
 
 async function testDialog(){
 
@@ -153,19 +138,41 @@ async function testDialog(){
 
 window.addEventListener("DOMContentLoaded", () => {
 
-  greetInputEl = document.querySelector("#greet-input");
-  greetMsgEl = document.querySelector("#greet-msg");
-
-  (async()=>{
-
+  //greetInputEl = document.querySelector("#greet-input");
+  //greetMsgEl = document.querySelector("#greet-msg");
+  /* (async()=>{
     store = await load('store.json', { autoSave: false });
-
-  })()
-  
-  document.getElementById('testdialog').addEventListener("click", (e) => {
-
+  })() */
+  /* document.getElementById('testdialog').addEventListener("click", (e) => {
     //testDialog()
     openMD()
+  }) */
+
+  document.getElementById('open-btn').addEventListener("click", (e) => {
+
+    openMD()
+  })
+
+  document.getElementById('reload-btn').addEventListener("click", (e) => {
+
+    loadMD(openedFile)
+  })
+
+  document.getElementById('edit-btn').addEventListener("click", async (e) => {
+
+    try{
+
+      await Command.create('exec-sh', [
+        '-c',
+        `notepad ${openedFile}`,
+      ]).execute();
+
+    }
+    catch(err){
+
+      errorMessage(err)
+    }
+    
   })
 
   document.getElementById('nav-about').addEventListener("click", async (e) => {
@@ -180,31 +187,26 @@ window.addEventListener("DOMContentLoaded", () => {
 
   })
 
-  document.getElementById('nav-test').addEventListener("click", (e) => {
-
+  /* document.getElementById('nav-test').addEventListener("click", (e) => {
     testDialog()
-
     //await message(``, { title: 'About', kind: 'info' });
-
-  })
+  }) */
 
   document.getElementById('nav-clear').addEventListener("click", (e) => {
 
     document.getElementById(targetEl).innerHTML = ""
 
+    openedFile = ""
+
   })
 
-  document.getElementById('mdfile').addEventListener("change", (e) => {
-
+  /* document.getElementById('mdfile').addEventListener("change", (e) => {
     document.getElementById('filedata').textContent = document.getElementById('mdfile').value 
-
-  });
-
-  document.querySelector("#greet-form").addEventListener("submit", (e) => {
+  }); */
+  /* document.querySelector("#greet-form").addEventListener("submit", (e) => {
     e.preventDefault();
     //greet();
     //viewMD()
     testDialog()
-    
-  });
+  }); */
 });

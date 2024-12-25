@@ -18,7 +18,6 @@
           <a href="#" id="nav-clear" style="margin-right:20px;">clear</a>
           <a href="#" id="nav-history" style="margin-right:20px;">history</a>
           <a href="#" id="nav-about" style="margin-right:20px;">about</a>
-          <a href="#" id="nav-test" style="margin-right:20px;">test</a>
         </span>
         
       </div>
@@ -26,14 +25,19 @@
 
     <main class="container-fluid">
       
-      <div class="w-75 mx-auto">
-        <form class="row" id="greet-form">
+      <div class="w-75 h-25 mx-auto">
+        <!-- <form class="row" id="greet-form">
           <input type="text" id="mdfile" placeholder="Open an MD file..." />
           <button type="submit">Open</button>
-        </form>
+        </form> -->
+        <div id="opened-file" class="p-2 border border-primary">Please open a file</div>
+        <div class="row p-2">
+          <div class="col"><button id="open-btn" class="w-75 mx-auto">Open</button></div>
+          <div class="col"><button id="reload-btn" class="w-75 mx-auto">Reload</button></div>
+          <div class="col"><button id="edit-btn" class="w-75 mx-auto">Edit</button></div>
+        </div>
       </div>
       
-      <button id="testdialog" style="width:150px;" class="mx-auto">Open</button>
       <p id="debug">...</p>
       <p id="filedata">...</p>
       <div id="markdown" class="min-vh-50">...</div>
