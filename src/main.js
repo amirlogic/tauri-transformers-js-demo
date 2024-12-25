@@ -102,11 +102,6 @@ async function openMD() {
 
     loadMD(filename)
 
-    //let mdcontent = await readTextFile(filename)
-    //let html = marked.parse(mdcontent);
-    //document.getElementById(targetEl).innerHTML = html
-    //document.getElementById('debug').textContent = await path.appDataDir()
-
     document.getElementById('moreinfo').textContent = filename
 
   }
@@ -116,7 +111,7 @@ async function openMD() {
   }
 }
 
-async function viewMD() {
+/* async function viewMD() {
 
   try{
     let filename = document.getElementById('mdfile').value
@@ -135,7 +130,7 @@ async function viewMD() {
     document.getElementById('debug').textContent = `${err} ${document.getElementById('mdfile').value}`
 
   }
-}
+} */
 
 async function testDialog(){
 
