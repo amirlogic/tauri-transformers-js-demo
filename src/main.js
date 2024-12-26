@@ -162,9 +162,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     try{
 
-      await Command.create('exec-sh', [
-        '-c',
-        `notepad ${openedFile}`,
+      await Command.create('notepad', [
+        openedFile
       ]).execute();
 
     }
