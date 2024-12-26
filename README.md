@@ -1,4 +1,6 @@
-# Tauri + Vanilla
+# Markdown Viewer
+
+Built using Tauri V2
 
 ## Apps
 
@@ -10,6 +12,7 @@
 ```bash
 pnpm tauri add dialog
 pnpm tauri add fs
+pnpm tauri add shell
 pnpm tauri add store
 ```
 
