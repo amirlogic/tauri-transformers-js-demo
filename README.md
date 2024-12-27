@@ -22,3 +22,13 @@ pnpm tauri add store
 ```
 
 
+## Linux
+
+On Fedora, the following packages were needed:
+
+```bash
+sudo dnf install libsoup3-devel
+sudo dnf install javascriptcoregtk4.1-devel
+sudo dnf install webkit2gtk4.1-devel
+```
+
