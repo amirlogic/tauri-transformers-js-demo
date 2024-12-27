@@ -12,7 +12,11 @@ Uses Marked to generate HTML from Markdown
 ```dev``` MD Viewer Development 
 
 
-## Installed plugins
+## Notes
+
+### Plugins
+
+The following plugins were installed:
 
 ```bash
 pnpm tauri add dialog
@@ -22,7 +26,7 @@ pnpm tauri add store
 ```
 
 
-## Linux
+### Linux
 
 On Fedora, the following packages were needed:
 
