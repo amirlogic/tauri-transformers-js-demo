@@ -12,7 +12,7 @@ Image viewer and editor designed to be lightweight, fast and customizable
 
 Built using Tauri V2
 
-Uses PNPM
+Uses PNPM and Node v22+
 
 To pass command line arguments to dev: `pnpm tauri dev -- -- <arguments>`
 
