@@ -155,8 +155,6 @@ async function loadImage(fname) {
 
   const cont = document.getElementById(targetEl)
 
-  document.getElementById('topleft').innerText = ''
-
   try{
 
     if (cont.hasChildNodes()) {
@@ -190,7 +188,11 @@ async function loadImage(fname) {
 
       imgWidth = svgElement.width.baseVal.value
 
-      document.getElementById('topleft').innerText = `svg ${imgHeight}x${imgWidth}`
+      // Update dimension badge with SVG dimensions
+      const badgeText = document.querySelector('.badge-text');
+      if (badgeText) {
+        badgeText.innerText = `${imgWidth}×${imgHeight}`;
+      }
 
     }
     else{
@@ -217,7 +219,10 @@ async function loadImage(fname) {
 
       imgnode.addEventListener("load", () => {
 
-        document.getElementById('topleft').innerText = `${imgnode.naturalWidth}x${imgnode.naturalHeight}`
+        const badgeText = document.querySelector('.badge-text');
+        if (badgeText) {
+          badgeText.innerText = `${imgnode.naturalWidth}×${imgnode.naturalHeight}`;
+        }
 
         imgWidth = imgnode.naturalWidth
 
@@ -1163,6 +1168,127 @@ window.addEventListener("DOMContentLoaded", () => {
   })();
 
   
+  // ============================================
+  // ZOOM CONTROLS FUNCTIONALITY
+  // ============================================
+  
+  let currentZoom = 100;
+  let fitMode = true;
+  
+  const zoomSlider = document.getElementById('zoom-slider');
+  const zoomValue = document.getElementById('zoom-value');
+  const zoomInBtn = document.getElementById('zoom-in');
+  const zoomOutBtn = document.getElementById('zoom-out');
+  const presetBtns = document.querySelectorAll('.preset-btn');
+  const imageViewport = document.querySelector('.image-viewport');
+  
+  function updateZoom(zoomPercent, isFit = false) {
+    currentZoom = zoomPercent;
+    fitMode = isFit;
+    
+    // Update UI
+    zoomValue.textContent = `${Math.round(zoomPercent)}%`;
+    zoomSlider.value = zoomPercent;
+    
+    // Update preset buttons
+    presetBtns.forEach(btn => {
+      const btnZoom = btn.dataset.zoom;
+      if (isFit && btnZoom === 'fit') {
+        btn.classList.add('active');
+      } else if (!isFit && btnZoom == zoomPercent) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    
+    // Apply zoom to image
+    if (!isFit) {
+      const scale = zoomPercent / 100;
+      imageViewport.style.transform = `scale(${scale})`;
+      
+      const imageElement = document.querySelector('#image img, #image svg');
+      if (imageElement) {
+        imageElement.style.maxWidth = 'none';
+        imageElement.style.maxHeight = 'none';
+      }
+    } else {
+      // Fit mode - reset to default
+      imageViewport.style.transform = 'scale(1)';
+      const imageElement = document.querySelector('#image img, #image svg');
+      if (imageElement) {
+        if (imageElement.tagName === 'IMG') {
+          imageElement.style.maxWidth = '100%';
+          imageElement.style.maxHeight = 'calc(100vh - 140px)';
+        } else {
+          imageElement.style.maxWidth = '';
+          imageElement.style.maxHeight = '';
+        }
+      }
+    }
+  }
+  
+  // Zoom In Button
+  zoomInBtn.addEventListener('click', () => {
+    const newZoom = Math.min(500, currentZoom + 10);
+    updateZoom(newZoom, false);
+  });
+  
+  // Zoom Out Button
+  zoomOutBtn.addEventListener('click', () => {
+    const newZoom = Math.max(10, currentZoom - 10);
+    updateZoom(newZoom, false);
+  });
+  
+  // Zoom Slider
+  zoomSlider.addEventListener('input', (e) => {
+    updateZoom(parseFloat(e.target.value), false);
+  });
+  
+  // Preset Buttons
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const zoomType = btn.dataset.zoom;
+      
+      if (zoomType === 'fit') {
+        updateZoom(100, true);
+      } else {
+        updateZoom(parseFloat(zoomType), false);
+      }
+    });
+  });
+  
+  // Keyboard shortcuts for zoom
+  document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + Plus/Equals for zoom in
+    if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
+      e.preventDefault();
+      const newZoom = Math.min(500, currentZoom + 10);
+      updateZoom(newZoom, false);
+    }
+    // Ctrl/Cmd + Minus for zoom out
+    else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+      e.preventDefault();
+      const newZoom = Math.max(10, currentZoom - 10);
+      updateZoom(newZoom, false);
+    }
+    // Ctrl/Cmd + 0 for reset/fit
+    else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+      e.preventDefault();
+      updateZoom(100, true);
+    }
+  });
+  
+  // Mouse wheel zoom (with Ctrl/Cmd)
+  document.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      
+      const delta = e.deltaY > 0 ? -10 : 10;
+      const newZoom = Math.min(500, Math.max(10, currentZoom + delta));
+      updateZoom(newZoom, false);
+    }
+  }, { passive: false });
 
   
 });
