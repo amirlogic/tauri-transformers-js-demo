@@ -163,12 +163,9 @@ async function loadImage(fname) {
 
   try{
 
-    if (cont.hasChildNodes()) {
-
+    while (cont.firstChild) {
       cont.removeChild(cont.firstChild);
     }
-
-    //document.getElementById(targetEl).innerHTML = ''
 
     if(imgext === 'svg'){
 
@@ -401,7 +398,7 @@ window.addEventListener("DOMContentLoaded", () => {
             text: 'Background Color: Light Gray',
             action: async () => {
 
-              document.body.style.backgroundColor = '#F1F1F1'
+              document.querySelector('.image-container').style.backgroundColor = '#F1F1F1'
             },
           }),
           await MenuItem.new({
@@ -409,7 +406,7 @@ window.addEventListener("DOMContentLoaded", () => {
             text: 'Background Color: Dark',
             action: async () => {
 
-              document.body.style.backgroundColor = '#000000'
+              document.querySelector('.image-container').style.backgroundColor = '#000000'
             },
           }),
           await PredefinedMenuItem.new({
