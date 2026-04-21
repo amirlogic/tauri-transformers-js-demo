@@ -551,6 +551,16 @@ body {
   outline-offset: 2px;
 }
 
+.zoom-panel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body:hover .zoom-panel {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* Accessibility - Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *,
