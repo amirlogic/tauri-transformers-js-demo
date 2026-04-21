@@ -55,6 +55,10 @@ async function shellCmd(xrr=[]){
 
     const cmdres = await Command.create('magick', xrr).execute();
 
+    if (xrr.length > 1) {
+      procFile = xrr[xrr.length - 1];
+    }
+    
     const cftxt = cmdres?.stdout || xrr[xrr.length-1]
 
     await message(cftxt, { title: 'Operation completed', kind: 'info' });
@@ -305,10 +309,20 @@ window.addEventListener("DOMContentLoaded", () => {
           await MenuItem.new({
             id: 'openproc',
             text: 'Open last generated file',
-            action: () => {
-              
-              if(procFile){
-                
+            action: async () => {
+              try {
+                if (procFile) {
+                  const fileExists = await exists(procFile);
+                  if (fileExists) {
+                    loadImage(procFile);
+                  } else {
+                    errorMessage("Generated file not found");
+                  }
+                } else {
+                  errorMessage("No generated file available");
+                }
+              } catch (err) {
+                errorMessage(err);
               }
             },
           }),
@@ -622,9 +636,9 @@ window.addEventListener("DOMContentLoaded", () => {
                       xrr.push(outx)
                     }
 
-                    if(xrr.length > 1){
-                      
-                      shellCmd(xrr)
+                    if (xrr.length > 1) {
+                      procFile = xrr[xrr.length - 1];
+                      shellCmd(xrr);
                     }
                     
                     //await message(cmdres?.stdout, { title: 'ImageMagick', kind: 'info' });
