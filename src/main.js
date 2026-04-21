@@ -18,6 +18,8 @@ let openedFile
 
 const targetEl = 'image'
 
+let procFile = null
+
 let history = []
 
 let store
@@ -298,6 +300,16 @@ window.addEventListener("DOMContentLoaded", () => {
             action: () => {
 
               openImage()
+            },
+          }),
+          await MenuItem.new({
+            id: 'openproc',
+            text: 'Open last generated file',
+            action: () => {
+              
+              if(procFile){
+                
+              }
             },
           }),
           await MenuItem.new({
