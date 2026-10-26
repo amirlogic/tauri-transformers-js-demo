@@ -255,6 +255,109 @@ h3 {
   font-size: 11px;
 }
 
+.recording-controls {
+  margin: 15px 0 16px;
+}
+
+.recording-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.recording-divider::before,
+.recording-divider::after {
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+  content: "";
+}
+
+.recording-actions {
+  min-height: 38px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.secondary-button {
+  min-height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-raised);
+  color: #e0deea;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.secondary-button:hover:not(:disabled) {
+  border-color: #706681;
+  background: #25232e;
+}
+
+.secondary-button:disabled {
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
+.secondary-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.record-button.is-recording {
+  border-color: rgb(255 111 126 / 55%);
+  background: rgb(255 111 126 / 11%);
+  color: #ff9ca7;
+}
+
+.recording-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ff9ca7;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.recording-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff6f7e;
+  box-shadow: 0 0 10px rgb(255 111 126 / 45%);
+  animation: recording-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes recording-pulse {
+  to {
+    opacity: 0.45;
+  }
+}
+
+.recording-note {
+  margin: 5px 0 0;
+  color: var(--faint);
+  font-size: 10px;
+  text-align: center;
+}
+
 .selected-audio {
   margin-top: 13px;
   padding: 11px 13px;
@@ -287,6 +390,39 @@ h3 {
 .selected-audio audio {
   width: 100%;
   height: 34px;
+}
+
+.language-field {
+  margin-top: 17px;
+}
+
+.language-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #e5e3ed;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.language-select {
+  width: 100%;
+  min-height: 39px;
+  padding: 0 34px 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-raised);
+  color: #e5e3ed;
+  font-size: 12px;
+}
+
+.language-select:disabled {
+  color: var(--faint);
+}
+
+.language-note {
+  margin: 6px 0 0;
+  color: var(--faint);
+  font-size: 10px;
 }
 
 .actions {
@@ -428,6 +564,12 @@ h3 {
 .copy-button svg {
   width: 14px;
   height: 14px;
+}
+
+.transcript-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .transcript {

@@ -4,6 +4,11 @@ const audioInput = document.getElementById("audio-file");
 const selectedAudio = document.getElementById("selected-audio");
 const fileName = document.getElementById("file-name");
 const audioPreview = document.getElementById("audio-preview");
+const recordButton = document.getElementById("record-button");
+const recordButtonLabel = document.getElementById("record-button-label");
+const recordingTimer = document.getElementById("recording-timer");
+const recordingTime = document.getElementById("recording-time");
+const languageSelect = document.getElementById("language-select");
 const transcribeButton = document.getElementById("transcribe-button");
 const buttonLabel = document.getElementById("button-label");
 const buttonIcon = document.getElementById("button-icon");
@@ -15,11 +20,40 @@ const progressBar = document.getElementById("progress-bar");
 const progressLabel = document.getElementById("progress-label");
 const transcript = document.getElementById("transcript");
 const copyButton = document.getElementById("copy-button");
+const exportButton = document.getElementById("export-button");
 
 let selectedFile;
 let audioUrl;
 let transcriberPromise;
 let isBusy = false;
+let isRecording = false;
+let recordingStream;
+let mediaRecorder;
+let recordingChunks = [];
+let recordingError;
+let recordingStartedAt;
+let recordingInterval;
+
+const whisperLanguages = [
+  "english", "chinese", "german", "spanish", "russian", "korean", "french", "japanese",
+  "portuguese", "turkish", "polish", "catalan", "dutch", "arabic", "swedish", "italian",
+  "indonesian", "hindi", "finnish", "vietnamese", "hebrew", "ukrainian", "greek", "malay",
+  "czech", "romanian", "danish", "hungarian", "tamil", "norwegian", "thai", "urdu",
+  "croatian", "bulgarian", "lithuanian", "latin", "maori", "malayalam", "welsh", "slovak",
+  "telugu", "persian", "latvian", "bengali", "serbian", "azerbaijani", "slovenian", "kannada",
+  "estonian", "macedonian", "breton", "basque", "icelandic", "armenian", "nepali", "mongolian",
+  "bosnian", "kazakh", "albanian", "swahili", "galician", "marathi", "punjabi", "sinhala",
+  "khmer", "shona", "yoruba", "somali", "afrikaans", "occitan", "georgian", "belarusian",
+  "tajik", "sindhi", "gujarati", "amharic", "yiddish", "lao", "uzbek", "faroese",
+  "haitian creole", "pashto", "turkmen", "nynorsk", "maltese", "sanskrit", "luxembourgish",
+  "myanmar", "tibetan", "tagalog", "malagasy", "assamese", "tatar", "hawaiian", "lingala",
+  "hausa", "bashkir", "javanese", "sundanese",
+];
+
+for (const language of whisperLanguages) {
+  const label = language.replace(/\b\w/g, (letter) => letter.toUpperCase());
+  languageSelect.add(new Option(label, language));
+}
 
 function setStatus(message, type = "info") {
   statusArea.hidden = !message;
@@ -37,10 +71,137 @@ function setProgress(progress, label) {
 function setBusy(busy, label = "Transcribe audio") {
   isBusy = busy;
   audioInput.disabled = busy;
-  transcribeButton.disabled = busy || !selectedFile;
+  languageSelect.disabled = busy;
+  recordButton.disabled = busy || isRecording;
+  transcribeButton.disabled = busy || !selectedFile || isRecording;
   buttonLabel.textContent = label;
   buttonIcon.hidden = busy;
   buttonSpinner.hidden = !busy;
+}
+
+function setAudioFile(file) {
+  if (audioUrl) URL.revokeObjectURL(audioUrl);
+  selectedFile = file;
+  audioUrl = URL.createObjectURL(file);
+  audioPreview.src = audioUrl;
+  fileName.textContent = file.name;
+  selectedAudio.hidden = false;
+  transcript.value = "";
+  copyButton.disabled = true;
+  exportButton.disabled = true;
+  progressTrack.hidden = true;
+  progressLabel.textContent = "";
+  setStatus("");
+  transcribeButton.disabled = isBusy || isRecording;
+}
+
+function formatRecordingTime(milliseconds) {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function updateRecordingTime() {
+  recordingTime.textContent = formatRecordingTime(Date.now() - recordingStartedAt);
+}
+
+function stopRecordingStream() {
+  recordingStream?.getTracks().forEach((track) => track.stop());
+  recordingStream = undefined;
+  clearInterval(recordingInterval);
+  recordingInterval = undefined;
+}
+
+async function startRecording() {
+  if (isBusy || isRecording) return;
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    setStatus("Microphone recording is not supported by this browser.", "error");
+    return;
+  }
+
+  isRecording = true;
+  recordButton.disabled = true;
+  audioInput.disabled = true;
+  transcribeButton.disabled = true;
+  recordButtonLabel.textContent = "Requesting microphone…";
+  setStatus("Waiting for microphone permission.");
+
+  try {
+    recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mimeType = [
+      "audio/webm;codecs=opus",
+      "audio/ogg;codecs=opus",
+      "audio/mp4",
+    ].find((type) => MediaRecorder.isTypeSupported(type));
+    mediaRecorder = new MediaRecorder(recordingStream, mimeType ? { mimeType } : undefined);
+    recordingChunks = [];
+    recordingError = undefined;
+
+    mediaRecorder.addEventListener("dataavailable", (event) => {
+      if (event.data.size > 0) recordingChunks.push(event.data);
+    });
+    mediaRecorder.addEventListener("error", (event) => {
+      console.error("Microphone recording failed:", event.error);
+      recordingError = event.error?.message ?? "Unknown microphone error.";
+    });
+    mediaRecorder.addEventListener("stop", () => {
+      const recordedType = mediaRecorder.mimeType || recordingChunks[0]?.type || "audio/webm";
+      const extension = recordedType.includes("ogg") ? "ogg" : recordedType.includes("mp4") ? "m4a" : "webm";
+      const recordedFile = new File(recordingChunks, `microphone-recording.${extension}`, {
+        type: recordedType,
+      });
+
+      stopRecordingStream();
+      mediaRecorder = undefined;
+      isRecording = false;
+      recordButton.disabled = isBusy;
+      audioInput.disabled = isBusy;
+      recordButton.classList.remove("is-recording");
+      recordButton.setAttribute("aria-pressed", "false");
+      recordButtonLabel.textContent = "Record audio";
+      recordingTimer.hidden = true;
+
+      if (recordingError) {
+        setStatus(`Recording failed: ${recordingError}`, "error");
+        recordingChunks = [];
+        return;
+      }
+
+      if (recordedFile.size === 0) {
+        setStatus("No audio was captured. Check microphone access and try again.", "error");
+        return;
+      }
+
+      setAudioFile(recordedFile);
+      setStatus("Recording ready. Click Transcribe audio when you’re ready.", "success");
+    });
+
+    mediaRecorder.start();
+    recordingStartedAt = Date.now();
+    recordingTimer.hidden = false;
+    recordingTime.textContent = "00:00";
+    recordButton.disabled = false;
+    recordButton.classList.add("is-recording");
+    recordButton.setAttribute("aria-pressed", "true");
+    recordButtonLabel.textContent = "Stop recording";
+    recordingInterval = setInterval(updateRecordingTime, 1000);
+    setStatus("Recording from microphone…");
+  } catch (error) {
+    stopRecordingStream();
+    isRecording = false;
+    mediaRecorder = undefined;
+    recordButton.disabled = isBusy;
+    audioInput.disabled = isBusy;
+    transcribeButton.disabled = isBusy || !selectedFile;
+    recordButton.classList.remove("is-recording");
+    recordButton.setAttribute("aria-pressed", "false");
+    recordButtonLabel.textContent = "Record audio";
+    recordingTimer.hidden = true;
+    console.error("Could not start microphone recording:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    setStatus(`Could not access the microphone: ${message}`, "error");
+  }
 }
 
 function loadTranscriber() {
@@ -75,18 +236,19 @@ audioInput.addEventListener("change", () => {
   const [file] = audioInput.files ?? [];
   if (!file) return;
 
-  if (audioUrl) URL.revokeObjectURL(audioUrl);
-  selectedFile = file;
-  audioUrl = URL.createObjectURL(file);
-  audioPreview.src = audioUrl;
-  fileName.textContent = file.name;
-  selectedAudio.hidden = false;
-  transcript.value = "";
-  copyButton.disabled = true;
-  progressTrack.hidden = true;
-  progressLabel.textContent = "";
-  setStatus("");
-  transcribeButton.disabled = false;
+  setAudioFile(file);
+});
+
+recordButton.addEventListener("click", () => {
+  if (mediaRecorder?.state === "recording") {
+    recordButton.disabled = true;
+    recordButtonLabel.textContent = "Finishing recording…";
+    setStatus("Finishing recording…");
+    mediaRecorder.stop();
+    return;
+  }
+
+  startRecording();
 });
 
 transcribeButton.addEventListener("click", async () => {
@@ -101,6 +263,7 @@ transcribeButton.addEventListener("click", async () => {
     const transcriber = await loadTranscriber();
     setStatus(`Transcribing ${selectedFile.name}…`);
     const result = await transcriber(audioUrl, {
+      language: languageSelect.value,
       chunk_length_s: 30,
       stride_length_s: 5,
     });
@@ -111,6 +274,7 @@ transcribeButton.addEventListener("click", async () => {
 
     transcript.value = result.text.trim();
     copyButton.disabled = transcript.value.length === 0;
+    exportButton.disabled = transcript.value.length === 0;
     setStatus("Transcription complete.", "success");
     progressTrack.hidden = true;
     progressLabel.textContent = "";
@@ -122,6 +286,20 @@ transcribeButton.addEventListener("click", async () => {
   } finally {
     setBusy(false);
   }
+});
+
+exportButton.addEventListener("click", () => {
+  if (!transcript.value) return;
+
+  const baseName = selectedFile?.name.replace(/\.[^.]+$/, "") || "transcript";
+  const downloadUrl = URL.createObjectURL(
+    new Blob([transcript.value], { type: "text/plain;charset=utf-8" }),
+  );
+  const downloadLink = document.createElement("a");
+  downloadLink.href = downloadUrl;
+  downloadLink.download = `${baseName}-transcript.txt`;
+  downloadLink.click();
+  setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
 });
 
 copyButton.addEventListener("click", async () => {
@@ -138,4 +316,5 @@ copyButton.addEventListener("click", async () => {
 
 window.addEventListener("pagehide", () => {
   if (audioUrl) URL.revokeObjectURL(audioUrl);
+  stopRecordingStream();
 });

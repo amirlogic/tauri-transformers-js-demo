@@ -62,12 +62,36 @@
           <input id="audio-file" type="file" accept="audio/*" />
         </label>
 
+        <div class="recording-controls">
+          <span class="recording-divider"><span>or record from your microphone</span></span>
+          <div class="recording-actions">
+            <button id="record-button" class="secondary-button record-button" type="button" aria-pressed="false">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="7" y="2.5" width="6" height="10" rx="3" />
+                <path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v2.5m-3 0h6" />
+              </svg>
+              <span id="record-button-label">Record audio</span>
+            </button>
+            <span id="recording-timer" class="recording-timer" role="timer" aria-live="off" hidden>
+              <span class="recording-dot"></span>
+              <span id="recording-time">00:00</span>
+            </span>
+          </div>
+          <p class="recording-note">Your browser will ask for microphone permission.</p>
+        </div>
+
         <div id="selected-audio" class="selected-audio" hidden>
           <div class="audio-file-info">
             <span class="audio-icon" aria-hidden="true">♫</span>
             <span id="file-name" class="file-name"></span>
           </div>
           <audio id="audio-preview" controls></audio>
+        </div>
+
+        <div class="language-field">
+          <label for="language-select">Transcription language</label>
+          <select id="language-select" class="language-select"></select>
+          <p class="language-note">Choose the spoken language for more accurate transcription.</p>
         </div>
 
         <div class="actions">
@@ -96,13 +120,21 @@
             <h3>Transcript</h3>
             <p>Generated text will appear here.</p>
           </div>
-          <button id="copy-button" class="copy-button" type="button" disabled>
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <rect x="7" y="7" width="9" height="10" rx="1.5" />
-              <path d="M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v8A1.5 1.5 0 0 0 4.5 14H7" />
-            </svg>
-            Copy
-          </button>
+          <div class="transcript-actions">
+            <button id="copy-button" class="copy-button" type="button" disabled>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="7" y="7" width="9" height="10" rx="1.5" />
+                <path d="M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v8A1.5 1.5 0 0 0 4.5 14H7" />
+              </svg>
+              Copy
+            </button>
+            <button id="export-button" class="copy-button" type="button" disabled>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M4 13.5v2A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5v-2" />
+              </svg>
+              Export .txt
+            </button>
+          </div>
         </div>
         <textarea id="transcript" class="transcript" rows="7" readonly placeholder="Your transcription will show up here…"></textarea>
         <p class="model-note">The model is downloaded on first use and cached for future transcriptions.</p>
