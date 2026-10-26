@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.12.4",
+    "@huggingface/transformers": "4.3.1",
     "onnxruntime-web": "1.31.0-dev.20260914-8d85527a0"
   },
   "dependencies": {

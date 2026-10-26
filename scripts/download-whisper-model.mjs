@@ -15,6 +15,12 @@ const onnxRuntimeDist = fileURLToPath(
 const onnxRuntimeBundleDirectory = fileURLToPath(
   new URL("../src/vendor/onnxruntime-web/", import.meta.url),
 );
+const transformersDist = fileURLToPath(
+  new URL("../node_modules/@huggingface/transformers/dist/", import.meta.url),
+);
+const transformersBundleDirectory = fileURLToPath(
+  new URL("../src/vendor/transformers/", import.meta.url),
+);
 
 const modelFiles = [
   ["config.json", 2248],
@@ -90,5 +96,13 @@ for (const file of runtimeFiles) {
   await copyFile(source, destination);
   console.log(`Bundled ONNX Runtime ${file}`);
 }
+
+const transformersBundle = "transformers.web.min.js";
+await mkdir(transformersBundleDirectory, { recursive: true });
+await copyFile(
+  join(transformersDist, transformersBundle),
+  join(transformersBundleDirectory, transformersBundle),
+);
+console.log(`Bundled Transformers.js ${transformersBundle}`);
 
 console.log(`Whisper tiny model is ready in ${modelDirectory}`);

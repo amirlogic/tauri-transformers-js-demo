@@ -32,9 +32,9 @@ Create a production build:
 pnpm tauri build
 ```
 
-The frontend is plain JavaScript modules; there is no webpack or other frontend bundler. The Transformers.js bundle is in `src/transformers.web.js`. An import map in `src/index.html` resolves the ONNX Runtime modules it imports.
+The frontend is plain JavaScript modules; there is no webpack or other frontend bundler. An import map in `src/index.html` resolves the ONNX Runtime modules imported by the local Transformers.js bundle.
 
-Before `tauri dev` or `tauri build`, the configured hook runs `scripts/download-whisper-model.mjs`. It downloads the model files from a pinned Hugging Face revision into `src/models/` and copies ONNX Runtime files from the installed npm dependency into `src/vendor/`; both directories are included in the Tauri frontend bundle and ignored by Git. The first setup needs an internet connection to download the model, and `pnpm install` installs the runtime dependency.
+Before `tauri dev` or `tauri build`, the configured hook runs `scripts/download-whisper-model.mjs`. It downloads the model files from a pinned Hugging Face revision into `src/models/` and copies the Transformers.js and ONNX Runtime bundles from their pinned npm dependencies into `src/vendor/`; these generated directories are included in the Tauri frontend bundle and ignored by Git. The first setup needs an internet connection to download the model, and `pnpm install` installs the build-time dependencies.
 
 ## Notes
 

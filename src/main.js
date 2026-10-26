@@ -206,7 +206,7 @@ async function startRecording() {
 
 function loadTranscriber() {
   if (!transcriberPromise) {
-    transcriberPromise = import("./transformers.web.js")
+    transcriberPromise = import("./vendor/transformers/transformers.web.min.js")
       .then(({ env, pipeline }) => {
         env.allowLocalModels = true;
         env.localModelPath = new URL("./models/", import.meta.url).href;
