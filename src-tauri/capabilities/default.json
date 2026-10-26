@@ -29,6 +29,7 @@
       "identifier": "fs:allow-read-text-file",
       "allow": [{ "path": "**" }]
     },
+    "fs:allow-write-text-file",
     "store:default",
     "dialog:default",
     "os:default",

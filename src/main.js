@@ -288,18 +288,40 @@ transcribeButton.addEventListener("click", async () => {
   }
 });
 
-exportButton.addEventListener("click", () => {
+exportButton.addEventListener("click", async () => {
   if (!transcript.value) return;
 
   const baseName = selectedFile?.name.replace(/\.[^.]+$/, "") || "transcript";
-  const downloadUrl = URL.createObjectURL(
-    new Blob([transcript.value], { type: "text/plain;charset=utf-8" }),
-  );
-  const downloadLink = document.createElement("a");
-  downloadLink.href = downloadUrl;
-  downloadLink.download = `${baseName}-transcript.txt`;
-  downloadLink.click();
-  setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+  const fileName = `${baseName}-transcript.txt`;
+
+  try {
+    if (window.__TAURI__?.dialog?.save && window.__TAURI__?.fs?.writeTextFile) {
+      const filePath = await window.__TAURI__.dialog.save({
+        defaultPath: fileName,
+        filters: [{ name: "Text files", extensions: ["txt"] }],
+      });
+
+      if (!filePath) return;
+
+      await window.__TAURI__.fs.writeTextFile(filePath, transcript.value);
+      setStatus(`Transcript saved to ${filePath}.`, "success");
+      return;
+    }
+
+    const downloadUrl = URL.createObjectURL(
+      new Blob([transcript.value], { type: "text/plain;charset=utf-8" }),
+    );
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = fileName;
+    downloadLink.click();
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    setStatus("Transcript download started.", "success");
+  } catch (error) {
+    console.error("Could not export transcript:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    setStatus(`Could not export transcript: ${message}`, "error");
+  }
 });
 
 copyButton.addEventListener("click", async () => {
