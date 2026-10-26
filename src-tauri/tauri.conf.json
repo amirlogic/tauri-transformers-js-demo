@@ -4,6 +4,14 @@
   "version": "0.1.0",
   "identifier": "com.transformersjs.app",
   "build": {
+    "beforeDevCommand": {
+      "script": "node scripts/download-whisper-model.mjs",
+      "cwd": ".."
+    },
+    "beforeBuildCommand": {
+      "script": "node scripts/download-whisper-model.mjs",
+      "cwd": ".."
+    },
     "frontendDist": "../src"
   },
   "app": {

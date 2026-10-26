@@ -207,8 +207,18 @@ async function startRecording() {
 function loadTranscriber() {
   if (!transcriberPromise) {
     transcriberPromise = import("./transformers.web.js")
-      .then(({ pipeline }) =>
-        pipeline("automatic-speech-recognition", MODEL_ID, {
+      .then(({ env, pipeline }) => {
+        env.allowLocalModels = true;
+        env.localModelPath = new URL("./models/", import.meta.url).href;
+        const wasmDirectory = new URL("./vendor/onnxruntime-web/", import.meta.url);
+        env.backends.onnx.wasm.wasmPaths = {
+          mjs: new URL("ort-wasm-simd-threaded.asyncify.mjs", wasmDirectory).href,
+          wasm: new URL("ort-wasm-simd-threaded.asyncify.wasm", wasmDirectory).href,
+        };
+
+        return pipeline("automatic-speech-recognition", MODEL_ID, {
+          dtype: "q8",
+          local_files_only: true,
           progress_callback: ({ status, file, progress }) => {
             if (status === "progress" && Number.isFinite(progress)) {
               const percent = Math.round(progress);
@@ -222,8 +232,8 @@ function loadTranscriber() {
               setStatus("Model file ready");
             }
           },
-        }),
-      )
+        });
+      })
       .catch((error) => {
         transcriberPromise = undefined;
         throw error;

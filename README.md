@@ -1,72 +1,51 @@
-# Image Tool
+# Transformers.js Playground
 
-Image viewer and editor designed to be lightweight, fast and customizable
+A desktop app built with Tauri 2 and vanilla JavaScript for trying machine-learning models in the browser. The first demo transcribes audio with Transformers.js and Whisper.
 
-[ImageMagick](https://github.com/ImageMagick/ImageMagick) v7+ is required for editing
+## Speech-to-text demo
 
+- Select an audio file or record a clip with your microphone.
+- Choose one of Whisper's 99 supported transcription languages. English is selected by default.
+- Preview the audio, transcribe it, copy the result, or export it as a `.txt` file.
+- Transcription runs on-device. Tauri builds include the quantized Whisper model (about 45 MB) and the ONNX Runtime Web JavaScript and WebAssembly files (about 26 MB) in the app bundle.
 
+The app uses `Xenova/whisper-tiny`. Audio recordings and selected files are processed locally and are not uploaded by the app. Once built, transcription does not need to download the model or runtime from the internet.
+
+## Development
+
+Requirements:
+
+- Node.js 22 or later
+- pnpm
+- Rust and the platform prerequisites for [Tauri 2](https://v2.tauri.app/start/prerequisites/)
+
+Install JavaScript dependencies and start the desktop app:
+
+```bash
+pnpm install
+pnpm tauri dev
+```
+
+Create a production build:
+
+```bash
+pnpm tauri build
+```
+
+The frontend is plain JavaScript modules; there is no webpack or other frontend bundler. The Transformers.js bundle is in `src/transformers.web.js`. An import map in `src/index.html` resolves the ONNX Runtime modules it imports.
+
+Before `tauri dev` or `tauri build`, the configured hook runs `scripts/download-whisper-model.mjs`. It downloads the model files from a pinned Hugging Face revision into `src/models/` and copies ONNX Runtime files from the installed npm dependency into `src/vendor/`; both directories are included in the Tauri frontend bundle and ignored by Git. The first setup needs an internet connection to download the model, and `pnpm install` installs the runtime dependency.
 
 ## Notes
 
-### Dev
+- Microphone recording requires microphone permission in the app or operating system.
+- Exporting in the Tauri app uses the native Save As dialog. In a regular browser, the transcript downloads as a text file.
+- `withGlobalTauri` is enabled in `src-tauri/tauri.conf.json` for the dialog and filesystem APIs used by the app.
+- To pass command-line arguments to the development app: `pnpm tauri dev -- -- <arguments>`.
+- To inspect runtime errors, open the WebView developer tools from the app window.
 
-Built using Tauri V2
-
-Uses PNPM and Node v22+
-
-To pass command line arguments to dev: `pnpm tauri dev -- -- <arguments>`
-
-Check Tauri version and update: 
-
-`pnpm outdated @tauri-apps/cli` then `pnpm update @tauri-apps/cli @tauri-apps/api --latest`
-
-
-### Config
-
-`withGlobalTauri` is set to `true`
-
-
-### Plugins
-
-The following plugins were installed:
+On Fedora, the following Tauri system packages may be needed:
 
 ```bash
-pnpm tauri add dialog
-pnpm tauri add fs
-pnpm tauri add shell
-pnpm tauri add store
-pnpm tauri add opener
-pnpm tauri add os
-pnpm tauri add deep-link
-pnpm tauri add cli
+sudo dnf install libsoup3-devel javascriptcoregtk4.1-devel webkit2gtk4.1-devel
 ```
-
-
-### Linux
-
-On Fedora, the following packages were needed:
-
-```bash
-sudo dnf install libsoup3-devel
-sudo dnf install javascriptcoregtk4.1-devel
-sudo dnf install webkit2gtk4.1-devel
-```
-
-### Debug
-
-To open the console and view errors: Open DevTools using Right click then Inspect.
-
-The semicolon after the 2 IIFEs inside the DOMContentLoaded event listener are necessary to avoid error.
-
-
-### Features
-
-- Open and view images
-
-- Modify images using commands sent to ImageMagick
-
-
-
-
-
-
