@@ -2,92 +2,116 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="bootstrap.min.css" />
-    <link rel="stylesheet" href="styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Tool</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script type="module" src="/main.js" defer></script>
-  </head>
-
-  <body>
-    <nav class="modern-nav">
-      <div class="nav-content">
-        <div class="nav-left">
-          <div id="topleft" class="dimension-badge">
-            <span class="badge-icon">📐</span>
-            <span class="badge-text">Ready</span>
-          </div>
-        </div>
-        
-        <div class="nav-center">
-          <span id="opened-file" class="file-path">
-            Please open a file
-          </span>
-        </div>
-
-        <div class="nav-right">
-          <div class="app-logo">IMAGE</div>
-        </div>
-      </div>
-    </nav>
-
-    <main class="image-container">
-      <div id="image" class="image-viewport">
-        <!-- Image will be loaded here -->
-      </div>
-    </main>
-
-    <!-- Zoom Controls -->
-    <div id="zoom-controls" class="zoom-panel">
-      <div class="zoom-header">
-        <span class="zoom-title">Zoom</span>
-        <span id="zoom-value" class="zoom-percentage">100%</span>
-      </div>
-      
-      <div class="zoom-buttons">
-        <button id="zoom-out" class="zoom-btn" title="Zoom Out">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        
-        <div class="zoom-slider-container">
-          <input 
-            type="range" 
-            id="zoom-slider" 
-            class="zoom-slider"
-            min="10" 
-            max="500" 
-            value="100" 
-            step="10"
-          />
-          <div class="slider-track"></div>
-        </div>
-        
-        <button id="zoom-in" class="zoom-btn" title="Zoom In">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="zoom-presets">
-        <button class="preset-btn" data-zoom="50">50%</button>
-        <button class="preset-btn" data-zoom="100">100%</button>
-        <button class="preset-btn" data-zoom="200">200%</button>
-        <button class="preset-btn active" data-zoom="fit">Fit</button>
-      </div>
-    </div>
-
-    <style>
-      @media print {
-        nav, #zoom-controls {
-          display: none !important;
+    <meta name="theme-color" content="#101117" />
+    <title>Transformers.js Playground</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "onnxruntime-web/webgpu": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.31.0-dev.20260914-8d85527a0/dist/ort.webgpu.bundle.min.mjs",
+          "onnxruntime-common": "https://cdn.jsdelivr.net/npm/onnxruntime-common@1.31.0-dev.20260911-2a43ec07e/dist/esm/index.js"
         }
       }
-    </style>
+    </script>
+    <script type="module" src="/main.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Transformers.js Playground home">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span>TRANSFORMERS<span class="brand-accent">.JS</span></span>
+      </a>
+      <span class="runtime-label"><span class="status-dot"></span> Runs locally in your browser</span>
+    </header>
+
+    <main class="page">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">MODEL DEMO <span>01</span></p>
+        <h1 id="page-title">Speech to text</h1>
+        <p class="intro-copy">
+          Turn an audio recording into text with Whisper, powered by
+          <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noreferrer">Transformers.js</a>.
+          Your audio stays on this device.
+        </p>
+      </section>
+
+      <section class="demo-card" aria-label="Speech transcription demo">
+        <div class="card-heading">
+          <div>
+            <h2>Transcribe audio</h2>
+            <p>Choose an audio file to get started.</p>
+          </div>
+          <span class="model-pill">WHISPER · TINY</span>
+        </div>
+
+        <label class="file-picker" for="audio-file">
+          <span class="upload-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" />
+            </svg>
+          </span>
+          <span class="picker-title">Choose an audio file</span>
+          <span class="picker-hint">WAV, MP3, M4A, OGG, or another supported audio format</span>
+          <input id="audio-file" type="file" accept="audio/*" />
+        </label>
+
+        <div id="selected-audio" class="selected-audio" hidden>
+          <div class="audio-file-info">
+            <span class="audio-icon" aria-hidden="true">♫</span>
+            <span id="file-name" class="file-name"></span>
+          </div>
+          <audio id="audio-preview" controls></audio>
+        </div>
+
+        <div class="actions">
+          <button id="transcribe-button" class="primary-button" type="button" disabled>
+            <span id="button-label">Transcribe audio</span>
+            <svg id="button-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 10h12m0 0-5-5m5 5-5 5" />
+            </svg>
+            <span id="button-spinner" class="spinner" hidden aria-hidden="true"></span>
+          </button>
+          <span class="privacy-note">Processed on-device · No upload</span>
+        </div>
+
+        <div id="status-area" class="status-area" role="status" aria-live="polite" hidden>
+          <div class="status-line">
+            <span id="status-message"></span>
+            <span id="progress-label" class="progress-label"></span>
+          </div>
+          <div id="progress-track" class="progress-track" role="progressbar" aria-label="Model download progress" aria-valuemin="0" aria-valuemax="100" hidden>
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="transcript-heading">
+          <div>
+            <h3>Transcript</h3>
+            <p>Generated text will appear here.</p>
+          </div>
+          <button id="copy-button" class="copy-button" type="button" disabled>
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="7" y="7" width="9" height="10" rx="1.5" />
+              <path d="M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v8A1.5 1.5 0 0 0 4.5 14H7" />
+            </svg>
+            Copy
+          </button>
+        </div>
+        <textarea id="transcript" class="transcript" rows="7" readonly placeholder="Your transcription will show up here…"></textarea>
+        <p class="model-note">The model is downloaded on first use and cached for future transcriptions.</p>
+      </section>
+
+      <footer class="page-footer">
+        <span>Powered by Transformers.js</span>
+        <a href="https://huggingface.co/Xenova/whisper-tiny" target="_blank" rel="noreferrer">View model</a>
+      </footer>
+    </main>
   </body>
 </html>

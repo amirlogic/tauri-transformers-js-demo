@@ -31,19 +31,6 @@
     },
     "store:default",
     "dialog:default",
-    "shell:allow-open",
-    "shell:allow-execute",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "magick",
-          "cmd": "magick",
-          "args": true,
-          "sidecar": false
-        }
-      ]
-    },
     "os:default",
     "core:event:default",
     "deep-link:default"
