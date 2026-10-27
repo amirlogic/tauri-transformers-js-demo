@@ -1,5 +1,7 @@
 # Transformers.js Playground
 
+![screenshot](screenshot.png)
+
 A desktop app built with Tauri 2 and vanilla JavaScript for trying machine-learning models in the browser. The first demo transcribes audio with Transformers.js and Whisper.
 
 ## Speech-to-text demo
